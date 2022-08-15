@@ -62,6 +62,7 @@ def test_multiple_atoms():
     with pytest.raises(SyntaxError, match="Too many top-level expressions"):
         ast(s)
 
+
 def test_negative_number():
     s = "-1"
     result = ast(s)

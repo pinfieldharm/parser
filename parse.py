@@ -6,9 +6,9 @@ import re
 AST = Union[str, int, List['AST']]
 
 
-def tokenize(s: str) -> Optional[List[str]]:
+def tokenize(input_string: str) -> Optional[List[str]]:
     # Split up into left parens, right parens and other non-whitespace
-    return re.findall(r'[()]|[^\s()]+', s)
+    return re.findall(r'[()]|[^\s()]+', input_string)
 
 
 def parse(tokens: List[str]) -> AST:
