@@ -2,33 +2,55 @@ import sys
 from typing import Union, List, Optional
 import re
 
+# An AST for a simplified lisp. Strings, ints and lists.
 AST = Union[str, int, List['AST']]
 
 
 def tokenize(s: str) -> Optional[List[str]]:
+    # Split up into left parens, right parens and other non-whitespace
     return re.findall(r'[()]|[^\s()]+', s)
 
 
 def parse(tokens: List[str]) -> AST:
-    outer_scope = []
-    scope_stack = [outer_scope]
+    # Top-level scope, should only end up with one expression in it.
+    root_scope = []
+
+    # Current chain of nested scopes. End of the list is current scope.
+    scopes = [root_scope]
+
     for t in tokens:
         if t == '(':
+            # Starting a new parenthesized section.
             new_scope = []
-            if scope_stack:
-                scope_stack[-1].append(new_scope)
-            scope_stack.append(new_scope)
+            scopes[-1].append(new_scope)
+            scopes.append(new_scope)
         elif t == ')':
-            scope_stack.pop()
-        elif t.isnumeric():
-            scope_stack[-1].append(int(t))
+            # Ending a parenthesized section.
+            if len(scopes) == 1:
+                # Prevent exiting the root scope (i.e. no corresponding left paren)
+                raise SyntaxError("Unbalanced parens")
+            scopes.pop()
         else:
-            scope_stack[-1].append(t)
+            # Adding an atom. Try to coerce into int if possible
+            try:
+                scopes[-1].append(int(t))
+            except ValueError:
+                scopes[-1].append(t)
 
-    return outer_scope[0]
+    if len(root_scope) > 1:
+        # This happens if we have too many expressions, e.g. a list of atoms
+        raise SyntaxError("Too many top-level expressions")
+
+    if len(scopes) > 1:
+        # This happens if there are unclosed parentheses.
+        raise SyntaxError("Unbalanced parens")
+
+    # Return contents of root scope.
+    return root_scope[0]
 
 
 def ast(s: str) -> Optional[AST]:
+    # Tokenize input and parse.
     tokens = tokenize(s)
     if not tokens:
         return None

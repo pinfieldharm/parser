@@ -44,7 +44,25 @@ def test_atom_is_valid():
     result = ast(s)
     assert result == 1234
 
+
 def test_wrong_parens():
-    s = ") foo 1 2 ("
+    s = ") foo 1 2"
+    with pytest.raises(SyntaxError, match="Unbalanced parens"):
+        ast(s)
+
+
+def test_dangling_parens():
+    s = "( ( 1 3 2"
+    with pytest.raises(SyntaxError, match="Unbalanced parens"):
+        ast(s)
+
+
+def test_multiple_atoms():
+    s = "1 2 3 4"
+    with pytest.raises(SyntaxError, match="Too many top-level expressions"):
+        ast(s)
+
+def test_negative_number():
+    s = "-1"
     result = ast(s)
-    assert result == "foo"
+    assert result == -1
