@@ -39,7 +39,12 @@ def test_empty_list_embedded():
     assert result == ["foo", []]
 
 
-def test_not_a_program():
-    with pytest.raises(SyntaxError):
-        s = "abc 1 2 3"
-        ast(s)
+def test_atom_is_valid():
+    s = "1234"
+    result = ast(s)
+    assert result == 1234
+
+def test_wrong_parens():
+    s = ") foo 1 2 ("
+    result = ast(s)
+    assert result == "foo"

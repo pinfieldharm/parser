@@ -1,7 +1,8 @@
+import sys
 from typing import Union, List, Optional
 import re
 
-AST = Union[str, List['AST']]
+AST = Union[str, int, List['AST']]
 
 
 def tokenize(s: str) -> Optional[List[str]]:
@@ -9,22 +10,22 @@ def tokenize(s: str) -> Optional[List[str]]:
 
 
 def parse(tokens: List[str]) -> AST:
-    scopes = []
-    last_scope = None
+    outer_scope = []
+    scope_stack = [outer_scope]
     for t in tokens:
         if t == '(':
             new_scope = []
-            if scopes:
-                scopes[-1].append(new_scope)
-            scopes.append(new_scope)
+            if scope_stack:
+                scope_stack[-1].append(new_scope)
+            scope_stack.append(new_scope)
         elif t == ')':
-            last_scope = scopes.pop()
+            scope_stack.pop()
         elif t.isnumeric():
-            scopes[-1].append(int(t))
+            scope_stack[-1].append(int(t))
         else:
-            scopes[-1].append(t)
+            scope_stack[-1].append(t)
 
-    return last_scope
+    return outer_scope[0]
 
 
 def ast(s: str) -> Optional[AST]:
@@ -35,4 +36,11 @@ def ast(s: str) -> Optional[AST]:
 
 
 if __name__ == '__main__':
-    print("Write me!")
+    if len(sys.argv) != 2:
+        print("Please supply a filename")
+        exit(-1)
+
+    filename = sys.argv[1]
+    with open(filename, 'r') as file:
+        s = file.read()
+    print(ast(s))
